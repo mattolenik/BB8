@@ -17,6 +17,9 @@ public class RigidbodyController : MonoBehaviour
 
     public float JumpDelay = 2.0f;
 
+    [Tooltip("Limit on how high head can bob during falls")]
+    public float BobLimit = 0.15f;
+
     public Vector3 Gravity = Vector3.down;
 
     public Transform Camera;
@@ -29,6 +32,8 @@ public class RigidbodyController : MonoBehaviour
     public float TorqueScale = 0.3f;
 
     bool grounded;
+
+    bool first = true;
 
     TimeSpan jumpDelay;
     DateTime lastJump = DateTime.MinValue;
@@ -56,20 +61,27 @@ public class RigidbodyController : MonoBehaviour
 
     void FixedUpdate()
     {
+        // HACK: fix bug where OnCollisionStay doesn't get called unless object is moving before first collision
+        if (first)
+        {
+            rbody.AddForce(-2000f, 0.0f, 0f);
+            first = false;
+        }
         HeadRoot.transform.position = transform.position;
 
         // When falling, allow the head to separate from the body to give the illusion of a separate part
         var y = rbody.velocity.y;
         if (y < 0)
         {
-            var o = Vector3.ClampMagnitude(new Vector3(0f, Mathf.Pow(-y / 10f, 2f), 0f), 0.2f);
-            var x = Vector3.MoveTowards(Head.transform.position, transform.position + o, Time.fixedDeltaTime);
-            Head.transform.position = x;
+            var o = Vector3.ClampMagnitude(new Vector3(0f, Mathf.Pow(-y / 10f, 2f), 0f), BobLimit);
+            //var x = Vector3.MoveTowards(Head.transform.localPosition, transform.localPosition + o, Time.fixedDeltaTime);
+            var x = Head.transform.localPosition + o;
+            //Head.transform.localPosition = x;
         }
         else
         {
             // Resync position on upward motion to prevent any position drift
-            Head.transform.position = transform.position;
+            //Head.transform.position = transform.position;
         }
 
         HeadRoot.AddTorque(rbody.angularVelocity);
