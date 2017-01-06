@@ -40,7 +40,6 @@ public class BbRigidbodyController : MonoBehaviour
         rbody = GetComponent<Rigidbody>();
         up = -Gravity.normalized;
         jumpDelay = TimeSpan.FromSeconds(JumpDelay);
-        Head.rotation = Quaternion.Euler(-90, 0, 132);
     }
 
     void Start()
